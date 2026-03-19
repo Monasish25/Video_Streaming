@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }} - Cineby{% endblock %}
+
+{% block extra_css %}
+<style>
+    .movie-detail-hero {
+        min-height: 80vh;
+        background-size: cover;
+        background-position: center top;
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        padding: 4rem;
+    }
+
+    .movie-detail-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, var(--bg-dark) 0%, rgba(10, 10, 10, 0.8) 50%, rgba(10, 10, 10, 0.4) 100%);
+    }
+
+    .movie-detail-content {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 3rem;
+        max-width: 1200px;
+    }
+
+    .movie-poster {
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .movie-info h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .movie-tagline {
+        font-size: 1.25rem;
+        font-style: italic;
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+    }
+
+    .movie-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .movie-overview {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        max-width: 700px;
+    }
+
+    .movie-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .movie-actions .btn {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+
+    .cast-section {
+        margin-top: 2rem;
+    }
+
+    .cast-section h3 {
+        margin-bottom: 1rem;
+    }
+
+    .cast-list {
+        display: flex;
+        gap: 1.5rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+
+    .cast-card {
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .cast-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 0.5rem;
+        background: var(--bg-secondary);
+    }
+
+    .cast-name {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .cast-character {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    /* Video Player Section */
+    .player-section {
+        padding: 2rem 4rem;
+        background: var(--bg-dark);
+    }
+
+    .player-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .video-player-wrapper {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+    }
+
+    .video-player-wrapper iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .player-notice {
+        text-align: center;
+        padding: 1rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .movie-detail-hero {
+            padding: 2rem;
+        }
+
+        .movie-detail-content {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .movie-poster {
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .movie-info h1 {
+            font-size: 2rem;
+        }
+
+        .movie-meta {
+            justify-content: center;
+        }
+
+        .movie-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Backdrop -->
+<section class="movie-detail-hero" style="background-image: url('{{ movie.backdrop_url }}');">
+    <div class="movie-detail-content">
+        <div class="movie-poster-container">
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster">
+        </div>
+        <div class="movie-info">
+            <h1>{{ movie.title }}</h1>
+            {% if movie.tagline %}
+            <p class="movie-tagline">"{{ movie.tagline }}"</p>
+            {% endif %}
+
+            <div class="movie-meta">
+                <span class="rating">
+                    <span class="star">★</span>
+                    {{ movie.vote_average }}/10
+                </span>
+                <span class="badge">{{ movie.year }}</span>
+                {% if movie.runtime %}
+                <span class="badge">{{ movie.runtime }} min</span>
+                {% endif %}
+                {% if movie.number_of_seasons %}
+                <span class="badge">{{ movie.number_of_seasons }} Season{{ movie.number_of_seasons|pluralize }}</span>
+                {% endif %}
+                {% for genre in movie.genres %}
+                <span class="badge">{{ genre }}</span>
+                {% endfor %}
+            </div>
+
+            <p class="movie-overview">{{ movie.overview }}</p>
+
+            <div class="movie-actions">
+                <a href="#player" class="btn btn-play">
+                    <span class="material-icons-outlined">play_arrow</span>
+                    Watch Now
+                </a>
+                {% if movie.trailer %}
+                <a href="{{ movie.trailer.url }}" target="_blank" class="btn btn-info">
+                    <span class="material-icons-outlined">smart_display</span>
+                    Trailer
+                </a>
+                {% endif %}
+            </div>
+
+            {% if movie.cast %}
+            <div class="cast-section">
+                <h3>Cast</h3>
+                <div class="cast-list">
+                    {% for person in movie.cast %}
+                    <div class="cast-card">
+                        {% if person.profile_url %}
+                        <img src="{{ person.profile_url }}" alt="{{ person.name }}" class="cast-avatar">
+                        {% else %}
+                        <div class="cast-avatar"></div>
+                        {% endif %}
+                        <div class="cast-name">{{ person.name }}</div>
+                        <div class="cast-character">{{ person.character }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Video Player -->
+<section class="player-section" id="player">
+    <div class="player-container">
+        <div class="video-player-wrapper">
+            <iframe src="{{ movie.embed_url }}" allowfullscreen></iframe>
+        </div>
+        <p class="player-notice">
+            <span class="material-icons-outlined" style="vertical-align: middle; font-size: 1rem;">info</span>
+            If the video doesn't load, try refreshing the page or use an alternative server.
+        </p>
+    </div>
+</section>
+
+<!-- Similar Content -->
+{% if movie.similar %}
+<section class="content-section" style="padding: 2rem 4rem;">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            Similar {% if media_type == 'tv' %}Shows{% else %}Movies{% endif %}
+        </h2>
+    </div>
+    <div class="carousel">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for item in movie.similar %}
+            <a href="{% if media_type == 'tv' %}{% url 'videos:tv_detail' item.id %}{% else %}{% url 'videos:movie_detail' item.id %}{% endif %}"
+                class="movie-card">
+                <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ item.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+{% endif %}
+
+<!-- Recommendations -->
+{% if movie.recommendations %}
+<section class="content-section" style="padding: 2rem 4rem;">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            You May Also Like
+        </h2>
+    </div>
+    <div class="carousel">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for item in movie.recommendations %}
+            <a href="{% if media_type == 'tv' %}{% url 'videos:tv_detail' item.id %}{% else %}{% url 'videos:movie_detail' item.id %}{% endif %}"
+                class="movie-card">
+                <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ item.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

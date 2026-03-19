@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.channel_name }} - VideoStream{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Channel Header -->
+    <div style="background-color: var(--bg-secondary); padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 2rem;">
+            <div
+                style="width: 100px; height: 100px; border-radius: 50%; background-color: var(--bg-hover); overflow: hidden;">
+                {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="{{ profile.channel_name }}"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <div
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                    👤
+                </div>
+                {% endif %}
+            </div>
+
+            <div style="flex: 1;">
+                <h1>{{ profile.channel_name }}</h1>
+                <p style="color: var(--text-secondary); margin: 0.5rem 0;">
+                    @{{ profile.user.username }} • {{ profile.subscribers_count }} subscribers • {{ videos.count }}
+                    videos
+                </p>
+
+                {% if profile.bio %}
+                <p style="margin-top: 1rem;">{{ profile.bio }}</p>
+                {% endif %}
+
+                <div style="margin-top: 1rem;">
+                    {% if user.is_authenticated and user != profile.user %}
+                    <button class="subscribe-btn {% if is_subscribed %}subscribed{% endif %}" id="subscribe-btn"
+                        onclick="toggleSubscribe({{ profile.user.id }}); return false;">
+                        {% if is_subscribed %}Subscribed{% else %}Subscribe{% endif %}
+                    </button>
+                    {% elif user == profile.user %}
+                    <a href="{% url 'users:profile' %}" class="btn btn-secondary">Edit Profile</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Videos -->
+    <h2 style="margin-bottom: 1.5rem;">Videos</h2>
+
+    <div class="video-grid">
+        {% for video in videos %}
+        <a href="{% url 'videos:watch' video.id %}" style="text-decoration: none; color: inherit;">
+            <div class="video-card">
+                {% if video.thumbnail %}
+                <img src="{{ video.thumbnail.url }}" alt="{{ video.title }}" class="video-thumbnail">
+                {% else %}
+                <div class="video-thumbnail"
+                    style="display: flex; align-items: center; justify-content: center; background: #333;">
+                    <span style="font-size: 3rem;">🎬</span>
+                </div>
+                {% endif %}
+
+                <div class="video-info">
+                    <h3 class="video-title">{{ video.title }}</h3>
+                    <div class="video-meta">
+                        <span>{{ video.views_count }} views</span>
+                        <span>•</span>
+                        <span>{{ video.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <p style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+            No videos uploaded yet.
+        </p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

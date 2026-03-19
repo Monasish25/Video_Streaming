@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Cineby{% endblock %}
+
+{% block content %}
+<div class="browse-page">
+    <div class="browse-header">
+        <h1>{{ title }}</h1>
+    </div>
+
+    <div class="browse-filters">
+        <div class="filter-group">
+            <span class="filter-label">Type:</span>
+            <a href="?type=movie"
+                class="btn btn-sm {% if media_type == 'movie' %}btn-primary{% else %}btn-ghost{% endif %}">Movies</a>
+            <a href="?type=tv"
+                class="btn btn-sm {% if media_type == 'tv' %}btn-primary{% else %}btn-ghost{% endif %}">TV Shows</a>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">Genre:</span>
+            <select class="filter-select" onchange="window.location.href='?genre=' + this.value">
+                <option value="">All Genres</option>
+                {% for genre in movie_genres %}
+                <option value="{{ genre.id }}">{{ genre.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">Network:</span>
+            <select class="filter-select" onchange="window.location.href='?network=' + this.value">
+                <option value="">All Networks</option>
+                <option value="213">Netflix</option>
+                <option value="1024">Prime Video</option>
+                <option value="49">HBO Max</option>
+                <option value="2739">Disney+</option>
+                <option value="2552">Apple TV+</option>
+                <option value="4330">Paramount+</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="browse-grid">
+        {% for item in content %}
+        <a href="{% if item.media_type == 'tv' %}{% url 'videos:tv_detail' item.id %}{% else %}{% url 'videos:movie_detail' item.id %}{% endif %}"
+            class="movie-card">
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="poster" loading="lazy">
+            <div class="card-overlay">
+                <span class="rating"><span class="star">★</span> {{ item.vote_average }}</span>
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">{{ item.title }}</h3>
+                <span class="card-year">{{ item.year }}</span>
+            </div>
+        </a>
+        {% empty %}
+        <div class="no-content">
+            <span class="material-icons-outlined">movie</span>
+            <p>No content found</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if content %}
+    <div class="browse-pagination">
+        {% if current_page > 1 %}
+        <a href="?page={{ current_page|add:'-1' }}" class="btn btn-ghost">
+            <span class="material-icons-outlined">chevron_left</span>
+            Previous
+        </a>
+        {% endif %}
+
+        <span class="page-info">Page {{ current_page }}</span>
+
+        <a href="?page={{ current_page|add:'1' }}" class="btn btn-ghost">
+            Next
+            <span class="material-icons-outlined">chevron_right</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

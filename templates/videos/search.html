@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Search - VideoStream{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Search Results{% if search_query %} for "{{ search_query }}"{% endif %}</h1>
+
+    {% if search_query %}
+    <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+        Found {{ videos.paginator.count }} result{{ videos.paginator.count|pluralize }}
+    </p>
+    {% endif %}
+
+    <div class="video-grid">
+        {% for video in videos %}
+        <a href="{% url 'videos:watch' video.id %}" style="text-decoration: none; color: inherit;">
+            <div class="video-card">
+                {% if video.thumbnail %}
+                <img src="{{ video.thumbnail.url }}" alt="{{ video.title }}" class="video-thumbnail">
+                {% else %}
+                <div class="video-thumbnail"
+                    style="display: flex; align-items: center; justify-content: center; background: #333;">
+                    <span style="font-size: 3rem;">🎬</span>
+                </div>
+                {% endif %}
+
+                <div class="video-info">
+                    <h3 class="video-title">{{ video.title }}</h3>
+                    <div class="video-meta">
+                        <a href="{% url 'users:channel' video.user.profile.slug %}" class="video-channel">
+                            {{ video.user.username }}
+                        </a>
+                        <span>•</span>
+                        <span>{{ video.views_count }} views</span>
+                        <span>•</span>
+                        <span>{{ video.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <p style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+            No videos found matching your search.
+        </p>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if videos.has_other_pages %}
+    <div style="margin-top: 2rem; text-align: center;">
+        {% if videos.has_previous %}
+        <a href="?q={{ search_query }}&page={{ videos.previous_page_number }}" class="btn btn-secondary">Previous</a>
+        {% endif %}
+
+        <span style="margin: 0 1rem; color: var(--text-secondary);">
+            Page {{ videos.number }} of {{ videos.paginator.num_pages }}
+        </span>
+
+        {% if videos.has_next %}
+        <a href="?q={{ search_query }}&page={{ videos.next_page_number }}" class="btn btn-secondary">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

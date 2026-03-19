@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+
+{% block title %}Cineby - Watch Movies & TV Shows Online{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+{% if featured_movie %}
+<section class="hero"
+    style="background-image: linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.3) 100%), url('{{ featured_movie.backdrop_url }}');">
+    <div class="hero-content">
+        <h1 class="hero-title">{{ featured_movie.title }}</h1>
+        <div class="hero-meta">
+            <span class="rating">
+                <span class="star">★</span>
+                {{ featured_movie.vote_average }}/10
+            </span>
+            <span class="badge">{{ featured_movie.year }}</span>
+            {% for genre in featured_movie.genres|slice:":2" %}
+            <span class="badge">{{ genre }}</span>
+            {% endfor %}
+        </div>
+        <p class="hero-overview">{{ featured_movie.overview|truncatechars:250 }}</p>
+        <div class="hero-buttons">
+            <a href="{% url 'videos:movie_detail' featured_movie.id %}" class="btn btn-play">
+                <span class="material-icons-outlined">play_arrow</span>
+                Play
+            </a>
+            <a href="{% url 'videos:movie_detail' featured_movie.id %}" class="btn btn-info">
+                <span class="material-icons-outlined">info</span>
+                See More
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Top 10 Content -->
+{% if top_10_movies %}
+<section class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            TOP 10
+        </h2>
+        <span class="section-subtitle">CONTENT</span>
+    </div>
+    <div class="carousel top-10-carousel">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for movie in top_10_movies %}
+            <a href="{% url 'videos:movie_detail' movie.id %}" class="top-10-card">
+                <span class="rank-number">{{ forloop.counter }}</span>
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster" loading="lazy">
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+{% endif %}
+
+<!-- Trending Today -->
+<section class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            Trending Today
+        </h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="trending-movies">Movies</button>
+            <button class="tab" data-tab="trending-series">Series</button>
+        </div>
+    </div>
+    <div class="carousel" id="trending-movies">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for movie in trending_movies %}
+            <a href="{% url 'videos:movie_detail' movie.id %}" class="movie-card">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ movie.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+    <div class="carousel hidden" id="trending-series">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for show in trending_tv %}
+            <a href="{% url 'videos:tv_detail' show.id %}" class="movie-card">
+                <img src="{{ show.poster_url }}" alt="{{ show.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ show.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+
+<!-- Series on Netflix -->
+{% if netflix_series %}
+<section class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            Series on <span class="highlight">Netflix</span>
+        </h2>
+        <div class="tabs network-tabs">
+            <button class="tab active" data-network="213">Netflix</button>
+            <button class="tab" data-network="1024">Prime</button>
+            <button class="tab" data-network="49">Max</button>
+            <button class="tab" data-network="2739">Disney+</button>
+            <button class="tab" data-network="2552">AppleTV</button>
+            <button class="tab" data-network="4330">Paramount</button>
+        </div>
+    </div>
+    <div class="carousel" id="network-carousel">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for show in netflix_series %}
+            <a href="{% url 'videos:tv_detail' show.id %}" class="movie-card">
+                <img src="{{ show.poster_url }}" alt="{{ show.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ show.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+{% endif %}
+
+<!-- Genres -->
+<section class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            Genres
+        </h2>
+        <div class="tabs genre-tabs">
+            <button class="tab active" data-genre="35">Comedy</button>
+            <button class="tab" data-genre="28">Action</button>
+            <button class="tab" data-genre="27">Horror</button>
+            <button class="tab" data-genre="10749">Romance</button>
+            <button class="tab" data-genre="878">Sci-fi</button>
+            <button class="tab" data-genre="18">Drama</button>
+            <button class="tab" data-genre="16">Animation</button>
+        </div>
+    </div>
+    <div class="carousel" id="genre-carousel">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for movie in comedy_movies %}
+            <a href="{% url 'videos:movie_detail' movie.id %}" class="movie-card">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ movie.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+
+<!-- Top Rated -->
+<section class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            Top Rated
+        </h2>
+        <div class="tabs">
+            <button class="tab active" data-tab="toprated-movies">Movies</button>
+            <button class="tab" data-tab="toprated-series">Series</button>
+        </div>
+    </div>
+    <div class="carousel" id="toprated-movies">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for movie in top_rated_movies %}
+            <a href="{% url 'videos:movie_detail' movie.id %}" class="movie-card">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ movie.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+    <div class="carousel hidden" id="toprated-series">
+        <button class="carousel-btn prev" aria-label="Previous">
+            <span class="material-icons-outlined">chevron_left</span>
+        </button>
+        <div class="carousel-track">
+            {% for show in top_rated_tv %}
+            <a href="{% url 'videos:tv_detail' show.id %}" class="movie-card">
+                <img src="{{ show.poster_url }}" alt="{{ show.title }}" class="poster" loading="lazy">
+                <div class="card-overlay">
+                    <span class="rating"><span class="star">★</span> {{ show.vote_average }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" aria-label="Next">
+            <span class="material-icons-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+
+<!-- AI Recommendations Section (Populated via JS) -->
+{% if user.is_authenticated %}
+<section class="content-section" id="ai-recommendations-section" style="display: none;">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            Recommended For You
+        </h2>
+    </div>
+    <div class="video-grid" id="ai-recommendations-grid">
+        <!-- Rendered by main.js via /api/ai/recommendations/ -->
+    </div>
+</section>
+{% endif %}
+
+<!-- User Uploaded Videos -->
+{% if videos %}
+<section class="content-section user-videos-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-accent"></span>
+            Community Uploads
+        </h2>
+        {% if user.is_authenticated %}
+        <a href="{% url 'videos:upload' %}" class="btn btn-primary btn-sm">Upload Video</a>
+        {% endif %}
+    </div>
+    <div class="video-grid">
+        {% for video in videos %}
+        <a href="{% url 'videos:watch' video.id %}" class="video-card">
+            {% if video.thumbnail %}
+            <img src="{{ video.thumbnail.url }}" alt="{{ video.title }}" class="video-thumbnail">
+            {% else %}
+            <div class="video-thumbnail placeholder">
+                <span class="material-icons-outlined">movie</span>
+            </div>
+            {% endif %}
+            <div class="video-info">
+                <h3 class="video-title">{{ video.title }}</h3>
+                <div class="video-meta">
+                    <span>{{ video.user.username }}</span>
+                    <span>•</span>
+                    <span>{{ video.views_count }} views</span>
+                    <span>•</span>
+                    <span>{{ video.created_at|timesince }} ago</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Tab switching
+    document.querySelectorAll('.tabs:not(.network-tabs):not(.genre-tabs)').forEach(tabGroup => {
+        tabGroup.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+
+                // Update active tab
+                tabGroup.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Show/hide content
+                const section = tabGroup.closest('.content-section');
+                section.querySelectorAll('.carousel').forEach(carousel => {
+                    if (carousel.id === tabId) {
+                        carousel.classList.remove('hidden');
+                    } else if (carousel.id && carousel.id.startsWith(tabId.split('-')[0])) {
+                        carousel.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    });
+
+    // Network tabs - fetch content via AJAX
+    document.querySelectorAll('.network-tabs .tab').forEach(tab => {
+        tab.addEventListener('click', async () => {
+            const networkId = tab.dataset.network;
+            const tabGroup = tab.closest('.tabs');
+
+            // Update active tab
+            tabGroup.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Fetch content
+            try {
+                const response = await fetch(`/api/network/${networkId}/`);
+                const data = await response.json();
+
+                const carousel = document.getElementById('network-carousel');
+                const track = carousel.querySelector('.carousel-track');
+
+                track.innerHTML = data.shows.map(show => `
+                <a href="/tv/${show.id}/" class="movie-card">
+                    <img src="${show.poster_url}" alt="${show.title}" class="poster" loading="lazy">
+                    <div class="card-overlay">
+                        <span class="rating"><span class="star">★</span> ${show.vote_average}</span>
+                    </div>
+                </a>
+            `).join('');
+            } catch (error) {
+                console.error('Error fetching network content:', error);
+            }
+        });
+    });
+
+    // Genre tabs - fetch content via AJAX
+    document.querySelectorAll('.genre-tabs .tab').forEach(tab => {
+        tab.addEventListener('click', async () => {
+            const genreId = tab.dataset.genre;
+            const tabGroup = tab.closest('.tabs');
+
+            // Update active tab
+            tabGroup.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Fetch content
+            try {
+                const response = await fetch(`/api/genre/${genreId}/`);
+                const data = await response.json();
+
+                const carousel = document.getElementById('genre-carousel');
+                const track = carousel.querySelector('.carousel-track');
+
+                track.innerHTML = data.movies.map(movie => `
+                <a href="/movie/${movie.id}/" class="movie-card">
+                    <img src="${movie.poster_url}" alt="${movie.title}" class="poster" loading="lazy">
+                    <div class="card-overlay">
+                        <span class="rating"><span class="star">★</span> ${movie.vote_average}</span>
+                    </div>
+                </a>
+            `).join('');
+            } catch (error) {
+                console.error('Error fetching genre content:', error);
+            }
+        });
+    });
+</script>
+{% endblock %}

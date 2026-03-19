@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+env/
+
+# Django
+*.log
+logs/
+local_settings.py
+db.sqlite3
+
+# Media (NEVER commit these to Git)
+media/
+media/videos/
+media/thumbnails/
+
+# Environment variables
+.env
+
+# IDE settings
+.vscode/
+.idea/

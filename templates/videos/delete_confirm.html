@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Video - {{ video.title }} {% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 4rem auto; text-align: center;">
+    <h1 style="color: #ff4444; margin-bottom: 1rem;">Delete Video</h1>
+    
+    <div style="background-color: var(--bg-secondary); padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+        <p style="font-size: 1.1rem; margin-bottom: 1rem;">Are you sure you want to delete the following video?</p>
+        <h2 style="margin-bottom: 2rem;">"{{ video.title }}"</h2>
+        
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+            This action cannot be undone. The video file, metadata, and all associated comments and likes will be permanently removed.
+        </p>
+
+        <form method="post" style="display: flex; gap: 1rem; justify-content: center;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" style="background-color: #ff4444;">Yes, Delete Video</button>
+            <a href="{% url 'videos:watch' video.id %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

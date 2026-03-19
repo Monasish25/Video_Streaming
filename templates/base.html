@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cineby - Watch Movies & TV Shows{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="{% url 'videos:home' %}" class="navbar-brand">
+            <span class="brand-icon">▶</span>
+            <span class="brand-text">Cineby</span>
+        </a>
+
+        <div class="navbar-menu">
+            <a href="{% url 'videos:home' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <span class="material-icons-outlined">home</span>
+                <span>Home</span>
+            </a>
+            <a href="{% url 'videos:browse' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'browse' %}active{% endif %}">
+                <span class="material-icons-outlined">grid_view</span>
+                <span>Browse</span>
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'videos:upload' %}" class="nav-link">
+                <span class="material-icons-outlined">cloud_upload</span>
+                <span>Upload</span>
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="navbar-actions">
+            <button class="search-toggle" id="searchToggle" aria-label="Search">
+                <span class="material-icons-outlined">search</span>
+            </button>
+
+            {% if user.is_authenticated %}
+            <div class="user-menu">
+                <button class="user-avatar" id="userMenuToggle">
+                    {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+                    {% else %}
+                    <span class="material-icons-outlined">account_circle</span>
+                    {% endif %}
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="{% url 'users:profile' %}">
+                        <span class="material-icons-outlined">person</span>
+                        Profile
+                    </a>
+                    <a href="{% url 'users:channel' user.profile.slug %}">
+                        <span class="material-icons-outlined">videocam</span>
+                        My Channel
+                    </a>
+                    <hr>
+                    <a href="{% url 'users:logout' %}">
+                        <span class="material-icons-outlined">logout</span>
+                        Logout
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <a href="{% url 'users:login' %}" class="btn btn-ghost">Login</a>
+            <a href="{% url 'users:register' %}" class="btn btn-primary">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-modal-content">
+            <form action="{% url 'videos:search' %}" method="get" class="search-form">
+                <span class="material-icons-outlined">search</span>
+                <input type="text" name="q" class="search-input" placeholder="Search movies, TV shows..."
+                    value="{{ search_query|default:'' }}" autocomplete="off" id="searchInput">
+                <button type="button" class="search-close" id="searchClose">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </form>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span class="material-icons-outlined">info</span>
+            {{ message }}
+            <button class="alert-close">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="brand-icon">▶</span>
+                <span class="brand-text">Cineby</span>
+            </div>
+            <p class="footer-disclaimer">
+                This site does not store any files on our server, we only linked to the media which is hosted on 3rd
+                party services.
+            </p>
+            <p class="footer-contact">contact@cineby.app</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

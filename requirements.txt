@@ -1,0 +1,25 @@
+# --- Core Framework ---
+Django>=5.0     
+djangorestframework     # For building APIs (if you add a React frontend later)
+
+# --- Database & Storage ---
+psycopg2-binary         # PostgreSQL adapter (Standard for production)
+python-dotenv           # For hiding API keys and secrets
+
+# --- Media Handling ---
+Pillow                  # For handling user avatars and thumbnails
+ffmpeg-python           # Wrapper for FFmpeg (Video processing)
+
+# --- Utilities ---
+django-cleanup          # Auto-deletes old files when models are deleted
+uuid                    # For generating unique Video IDs (e.g., watch?v=dQw4w9WgXcQ)
+
+# --- AI & Data (For your specific interest) ---
+numpy
+pandas
+scikit-learn            # For basic content recommendation logic
+
+# --- Background Tasks ---
+celery
+redis
+requests

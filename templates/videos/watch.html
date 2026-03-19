@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ video.title }} - VideoStream{% endblock %}
+
+{% block content %}
+<div class="video-player-container">
+    <!-- Main Video Player -->
+    <div class="video-player-main">
+        <div class="video-player">
+            <video id="videoPlayer" autoplay>
+                <source src="{% url 'videos:serve_video' video.id %}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- Custom Video Controls -->
+            <div class="custom-controls" id="videoControls">
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <div class="controls-bottom">
+                    <div class="controls-left">
+                        <button class="control-btn" id="playPauseBtn" title="Play/Pause">
+                            <span id="playIcon">▶</span>
+                        </button>
+                        <button class="control-btn skip-btn" id="skipBackBtn" title="Skip 10s backward">
+                            ⏪ 10s
+                        </button>
+                        <button class="control-btn skip-btn" id="skipForwardBtn" title="Skip 10s forward">
+                            10s ⏩
+                        </button>
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                        </div>
+                    </div>
+
+                    <div class="controls-right">
+                        <div class="volume-container">
+                            <button class="control-btn" id="muteBtn" title="Mute/Unmute">
+                                🔊
+                            </button>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100">
+                        </div>
+
+                        <div class="quality-container">
+                            <select class="quality-selector" id="qualitySelector">
+                                <option value="auto">Auto</option>
+                                <option value="1080">1080p</option>
+                                <option value="720">720p</option>
+                                <option value="480">480p</option>
+                                <option value="360">360p</option>
+                            </select>
+                        </div>
+
+                        <button class="control-btn" id="fullscreenBtn" title="Fullscreen">
+                            ⛶
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="video-details">
+            <h1 class="video-title-large">{{ video.title }}</h1>
+
+            <div class="video-stats">
+                <div class="video-meta">
+                    <span>{{ video.views_count }} views</span>
+                    <span>•</span>
+                    <span>{{ video.created_at|date:"M d, Y" }}</span>
+                </div>
+
+                <div class="video-actions">
+                    {% if user.is_authenticated %}
+                    <button class="action-btn {% if user_like and user_like.like_type == 'like' %}active{% endif %}"
+                        id="like-btn" onclick="likeVideo('{{ video.id }}', 'like')">
+                        👍 <span id="likes-count">{{ video.likes_count }}</span>
+                    </button>
+                    <button class="action-btn {% if user_like and user_like.like_type == 'dislike' %}active{% endif %}"
+                        id="dislike-btn" onclick="likeVideo('{{ video.id }}', 'dislike')">
+                        👎 <span id="dislikes-count">{{ video.dislikes_count }}</span>
+                    </button>
+
+                    {% if user == video.user %}
+                    <a href="{% url 'videos:edit' video.id %}" class="btn btn-secondary" style="margin-left: 1rem;">
+                        ✏️ Edit
+                    </a>
+                    <button class="btn btn-danger" style="margin-left: 0.5rem;" onclick="deleteVideo('{{ video.id }}')">
+                        🗑️ Delete
+                    </button>
+                    {% endif %}
+                    {% else %}
+                    <span class="action-btn">👍 {{ video.likes_count }}</span>
+                    <span class="action-btn">👎 {{ video.dislikes_count }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="channel-info">
+                <div class="channel-avatar">
+                    {% if video.user.profile.avatar %}
+                    <img src="{{ video.user.profile.avatar.url }}" alt="{{ video.user.username }}"
+                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                    <div
+                        style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        👤
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="channel-details">
+                    <a href="{% url 'users:channel' video.user.profile.slug %}" class="channel-name">
+                        {{ video.user.username }}
+                    </a>
+                    <div class="subscriber-count" id="subscriber-count">
+                        {{ video.user.profile.subscribers_count }} subscribers
+                    </div>
+                </div>
+
+                {% if user.is_authenticated and user != video.user %}
+                <button class="subscribe-btn {% if is_subscribed %}subscribed{% endif %}" id="subscribe-btn"
+                    onclick="toggleSubscribe({{ video.user.id }}); return false;">
+                    {% if is_subscribed %}Subscribed{% else %}Subscribe{% endif %}
+                </button>
+                {% endif %}
+            </div>
+
+            {% if video.description %}
+            <div style="margin-top: 1rem; padding: 1rem; background-color: var(--bg-secondary); border-radius: 8px;">
+                <p style="white-space: pre-wrap;">{{ video.description }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <h2 class="comments-header">Comments</h2>
+
+            {% if user.is_authenticated %}
+            <div class="comment-form">
+                <textarea id="comment-text" class="comment-input" placeholder="Add a comment..." rows="2"></textarea>
+                <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="addComment('{{ video.id }}')">
+                    Comment
+                </button>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary);">
+                <a href="{% url 'users:login' %}">Login</a> to comment
+            </p>
+            {% endif %}
+
+            <!-- Comments List -->
+            {% for comment in comments %}
+            <div class="comment">
+                <div class="comment-avatar">
+                    {% if comment.user.profile.avatar %}
+                    <img src="{{ comment.user.profile.avatar.url }}" alt="{{ comment.user.username }}"
+                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                    <div
+                        style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                        👤</div>
+                    {% endif %}
+                </div>
+
+                <div class="comment-content">
+                    <div>
+                        <span class="comment-author">{{ comment.user.username }}</span>
+                        <span class="comment-date">{{ comment.created_at|timesince }} ago</span>
+                    </div>
+                    <p class="comment-text">{{ comment.text }}</p>
+
+                    <div style="margin-top: 0.5rem; display: flex; gap: 1rem; align-items: center;">
+                        {% if user.is_authenticated %}
+                        <button class="action-btn" id="comment-like-{{ comment.id }}"
+                            onclick="likeComment({{ comment.id }}); return false;">
+                            👍 {{ comment.likes_count }}
+                        </button>
+                        {% else %}
+                        <span style="color: var(--text-secondary);">👍 {{ comment.likes_count }}</span>
+                        {% endif %}
+
+                        {% if user == comment.user or user == video.user %}
+                        <button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.875rem;"
+                            onclick="deleteComment({{ comment.id }}); return false;">
+                            Delete
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sidebar with Recommended Videos -->
+    <div class="video-sidebar">
+        <h3 class="sidebar-title">Recommended</h3>
+
+        {% for rec_video in recommended %}
+        <a href="{% url 'videos:watch' rec_video.id %}" style="text-decoration: none; color: inherit;">
+            <div class="recommended-video">
+                {% if rec_video.thumbnail %}
+                <img src="{{ rec_video.thumbnail.url }}" alt="{{ rec_video.title }}" class="recommended-thumbnail">
+                {% else %}
+                <div class="recommended-thumbnail"
+                    style="display: flex; align-items: center; justify-content: center; background: #333;">
+                    🎬
+                </div>
+                {% endif %}
+
+                <div class="recommended-info">
+                    <div class="video-title" style="font-size: 0.875rem;">{{ rec_video.title }}</div>
+                    <div class="video-meta" style="font-size: 0.75rem;">
+                        <div>{{ rec_video.user.username }}</div>
+                        <div>{{ rec_video.views_count }} views</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize video player on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeVideoPlayer();
+    });
+</script>
+{% endblock %}

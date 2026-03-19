@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Video - {{ video.title }} {% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <h1>Edit Video: {{ video.title }}</h1>
+
+    <form method="post" enctype="multipart/form-data" id="edit-form" style="margin-top: 2rem;">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">Title *</label>
+            {{ form.title }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            {{ form.description }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Video File (Optional, upload to replace)</label>
+            {{ form.video_file }}
+            <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                Current file: {{ video.video_file.name }}
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Thumbnail (Optional, upload to replace)</label>
+            {{ form.thumbnail }}
+            {% if video.thumbnail %}
+            <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                Current thumbnail: <img src="{{ video.thumbnail.url }}" alt="Thumbnail" width="100" style="display: block; margin-top: 5px;">
+            </small>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Category</label>
+            {{ form.category }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Status</label>
+            {{ form.status }}
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-error">
+            {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <p>{{ field }}: {{ error }}</p>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'videos:watch' video.id %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
